@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import About from "./About"
 import Contact from "./Contact"
+import Image from "../assets/Blog Landing page.png"
 import styles from './Home.module.css'
 
 function Home() {
@@ -40,7 +41,7 @@ function Home() {
               </div>
               <div className={`max-w-lg ${styles.fadeInLeft} ${styles.delaySmall}`}>
                 <img 
-                  src="src/assets/Blog Landing page.png" 
+                  src={Image} 
                   alt="Blog Landing" 
                   className="w-full h-auto"
                 />
