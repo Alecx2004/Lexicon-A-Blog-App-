@@ -143,14 +143,14 @@ export class Service {
         return '';
       }
       
-      // Construct the full preview URL manually
-      const previewUrl = `${conf.appwriteUrl}/storage/buckets/${conf.appwriteBucketId}/files/${fileId}/preview?width=${width}&height=${height}&quality=100`;
+      // Construct the full download URL
+      const downloadUrl = `${conf.appwriteUrl}/storage/buckets/${conf.appwriteBucketId}/files/${fileId}/download`;
       
-      console.log('Generated Preview URL:', previewUrl);
+      console.log('Generated Download URL:', downloadUrl);
       
-      return previewUrl;
+      return downloadUrl;
     } catch (error) {
-      console.error('Error generating file preview URL:', error);
+      console.error('Error generating file download URL:', error);
       return '';
     }
   }

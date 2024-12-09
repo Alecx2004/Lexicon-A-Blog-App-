@@ -114,6 +114,7 @@ function PostCard({
                   });
                   setError("Failed to load image");
                 }}
+                referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
               />
             )}

@@ -144,7 +144,7 @@ export default function Post() {
                   });
                   setImgError(true);
                 }}
-                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
               />
             ) : (
               <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-xl flex items-center justify-center">
