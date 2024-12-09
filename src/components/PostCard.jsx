@@ -7,6 +7,7 @@ import { FaCommentAlt } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { fetchComments } from "../store/commentSlice";
 import { FaUserCircle } from "react-icons/fa";
+import conf from '../appwrite/config';
 
 function PostCard({
   $id,
@@ -30,14 +31,21 @@ function PostCard({
   useEffect(() => {
     if (featuredImage) {
       try {
-        const imgUrl = appwriteService.getFilePreview(featuredImage);
+        const imgUrl = appwriteService.getFileUrl(featuredImage);
         setImg(imgUrl);
       } catch (err) {
-        setError("Failed to load image");
-        console.error("Error loading image:", {
-          fileId: featuredImage,
-          error: err
-        });
+        try {
+          // Fallback to direct URL construction
+          const fallbackUrl = `${conf.appwriteUrl}/storage/buckets/${conf.appwriteBucketId}/files/${featuredImage}/view?project=${conf.appwriteProjectId}`;
+          setImg(fallbackUrl);
+        } catch (viewErr) {
+          console.error("🚨 Image Loading Failed:", {
+            fileId: featuredImage,
+            previewError: err,
+            viewError: viewErr
+          });
+          setError("Failed to load image");
+        }
       } finally {
         setLoading(false);
       }
@@ -108,14 +116,14 @@ function PostCard({
                 alt={title}
                 className="w-full h-48 object-cover rounded-xl"
                 onError={() => {
-                  console.error('PostCard image load error:', {
+                  console.error('🚨 PostCard Image Load Error:', {
                     src: img,
                     fileId: featuredImage
                   });
                   setError("Failed to load image");
                 }}
-                referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
+                loading="lazy"
               />
             )}
           </div>

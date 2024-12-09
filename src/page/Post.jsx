@@ -14,6 +14,7 @@ export default function Post() {
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
   const { slug } = useParams();
   const navigate = useNavigate();
 
@@ -45,6 +46,13 @@ export default function Post() {
     }
   }, [slug, navigate]);
 
+  useEffect(() => {
+    if (post?.featuredImage) {
+      const url = appwriteService.getFilePreview(post.featuredImage);
+      setImageUrl(url);
+    }
+  }, [post?.featuredImage]);
+
   const deletePost = () => {
     if (
       window.confirm(
@@ -72,6 +80,7 @@ export default function Post() {
 
   const parseContent = (content) => {
     try {
+      if (!content) return "No content available";
       return parse(content);
     } catch (err) {
       console.error("Error parsing content:", err);
@@ -130,26 +139,30 @@ export default function Post() {
 
           {/* Featured Image Section */}
           <div className="mb-8 bg-gray-100 dark:bg-gray-800 rounded-xl p-4">
-            {!imgError ? (
-              <img
-                src={appwriteService.getFilePreview(post.featuredImage)}
-                alt={post.title}
-                className="w-full h-[300px] md:h-[400px] rounded-xl object-cover"
-                onError={(e) => {
-                  console.error('Image load error details:', {
-                    src: e.target.src,
-                    errorEvent: e,
-                    naturalWidth: e.target.naturalWidth,
-                    naturalHeight: e.target.naturalHeight
-                  });
-                  setImgError(true);
-                }}
-                referrerPolicy="no-referrer"
-              />
+            {!imgError && imageUrl ? (
+              <div className="relative w-full h-[300px] md:h-[400px]">
+                <img
+                  src={imageUrl}
+                  alt={post.title}
+                  className="absolute inset-0 w-full h-full rounded-xl object-cover"
+                  onError={(e) => {
+                    console.error('Image load error:', {
+                      src: e.target.src,
+                      error: e.message,
+                      postId: post.$id
+                    });
+                    setImgError(true);
+                  }}
+                  loading="lazy"
+                  decoding="async"
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
             ) : (
               <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-xl flex items-center justify-center">
                 <p className="text-gray-500 dark:text-gray-400">
-                  Failed to load image
+                  {imgError ? "Failed to load image" : "No image available"}
                 </p>
               </div>
             )}

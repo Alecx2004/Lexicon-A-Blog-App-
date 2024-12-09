@@ -43,7 +43,7 @@ export class Service {
     }
   }
 
-  async updatePost(slug, { title, content, featureImage, status }) {
+  async updatePost(slug, { title, content, featuredImage, status }) {
     try {
       return await this.databases.updateDocument(
         conf.appwriteDatabaseId,
@@ -52,7 +52,7 @@ export class Service {
         {
           title,
           content,
-          featureImage,
+          featuredImage,
           status,
         }
       );
@@ -136,21 +136,29 @@ export class Service {
     }
   }
 
-  getFilePreview(fileId, width = 400, height = 400) {
+  getFilePreview(fileId) {
     try {
       if (!fileId) {
         console.warn('No file ID provided');
         return '';
       }
       
-      // Construct the full download URL
-      const downloadUrl = `${conf.appwriteUrl}/storage/buckets/${conf.appwriteBucketId}/files/${fileId}/download`;
-      
-      console.log('Generated Download URL:', downloadUrl);
-      
-      return downloadUrl;
+      const previewUrl = this.storage.getFilePreview(
+        conf.appwriteBucketId,
+        fileId,
+        2000, // width
+        2000, // height
+        'center',
+        100, // quality
+        1, // border
+        '', // background color
+        'jpg' // output format
+      );
+
+      // Ensure the URL is correctly constructed
+      return previewUrl;
     } catch (error) {
-      console.error('Error generating file download URL:', error);
+      console.error('Error generating file preview URL:', error);
       return '';
     }
   }

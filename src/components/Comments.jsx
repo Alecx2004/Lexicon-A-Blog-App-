@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -110,60 +111,77 @@ const CommentList = ({ comments, onDelete, currentUserId }) => {
 
 const Comments = ({ postId }) => {
   const dispatch = useDispatch();
-  const comments = useSelector(selectAllComments) || [];
-  const status = useSelector(selectCommentStatus) || 'idle';
-  const [currentUser, setCurrentUser] = useState(null);
+  const comments = useSelector(selectAllComments);
+  const status = useSelector(selectCommentStatus);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const getUser = async () => {
+    const loadUserAndComments = async () => {
       try {
         const user = await authService.getCurrentUser();
-        setCurrentUser(user);
-      } catch (error) {
-        console.error("Error fetching user:", error);
+        if (user) {
+          setCurrentUserId(user.$id);
+        }
+        await dispatch(fetchComments(postId)).unwrap();
+      } catch (err) {
+        setError("Failed to load comments. Please try again later.");
+        console.error("Error loading comments:", err);
       }
     };
-    getUser();
-  }, []);
 
-  useEffect(() => {
-    if (postId) {
-      dispatch(fetchComments(postId));
-    }
+    loadUserAndComments();
   }, [dispatch, postId]);
 
-  const handleDeleteComment = async (commentId) => {
-    try {
-      await dispatch(deleteComment(commentId)).unwrap();
-    } catch (error) {
-      console.error("Failed to delete comment:", error);
+  const handleDelete = async (commentId) => {
+    if (window.confirm("Are you sure you want to delete this comment?")) {
+      try {
+        await dispatch(deleteComment(commentId)).unwrap();
+      } catch (err) {
+        console.error("Failed to delete comment:", err);
+        alert("Failed to delete comment. Please try again.");
+      }
     }
   };
 
-  if (status === "loading") {
-    return <div className="text-center">Loading comments...</div>;
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto mt-8 px-4">
+        <p className="text-red-500 text-center">{error}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="py-8">
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
-            Comments ({comments.length})
-          </h2>
-        </div>
-        {currentUser && <CommentForm postId={postId} />}
-        {comments.length > 0 ? (
-          <CommentList
-            comments={comments}
-            onDelete={currentUser ? handleDeleteComment : undefined}
-            currentUserId={currentUser?.$id}
-          />
-        ) : (
-          <p className="text-gray-500 dark:text-gray-400">No comments yet.</p>
-        )}
+    <section className="max-w-4xl mx-auto py-8 px-4">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Comments ({comments.length})
+        </h2>
       </div>
-    </div>
+
+      {currentUserId ? (
+        <CommentForm postId={postId} />
+      ) : (
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Please log in to post a comment.
+        </p>
+      )}
+
+      {status === "loading" ? (
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : comments.length > 0 ? (
+        <CommentList
+          comments={comments}
+          onDelete={handleDelete}
+          currentUserId={currentUserId}
+        />
+      ) : (
+        <p className="text-gray-600 dark:text-gray-400">No comments yet.</p>
+      )}
+    </section>
   );
 };
 
