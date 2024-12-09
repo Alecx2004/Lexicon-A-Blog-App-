@@ -34,10 +34,15 @@ function PostCard({
         setImg(imgUrl);
       } catch (err) {
         setError("Failed to load image");
-        console.error("Error loading image:", err);
+        console.error("Error loading image:", {
+          fileId: featuredImage,
+          error: err
+        });
       } finally {
         setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
   }, [featuredImage]);
 
@@ -102,7 +107,14 @@ function PostCard({
                 src={img}
                 alt={title}
                 className="w-full h-48 object-cover rounded-xl"
-                onError={() => setError("Failed to load image")}
+                onError={() => {
+                  console.error('PostCard image load error:', {
+                    src: img,
+                    fileId: featuredImage
+                  });
+                  setError("Failed to load image");
+                }}
+                crossOrigin="anonymous"
               />
             )}
           </div>

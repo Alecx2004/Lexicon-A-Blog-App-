@@ -103,28 +103,56 @@ export class Service {
   //   file upload services
   async uploadFile(file) {
     try {
-      return await this.storage.createFile(
+      if (!file) {
+        console.warn('No file provided for upload');
+        return null;
+      }
+      
+      const uploadedFile = await this.storage.createFile(
         conf.appwriteBucketId,
         ID.unique(),
         file
       );
+      
+      return uploadedFile;
     } catch (error) {
-      console.log("Appwrite serve :: uploadFile:: error", error);
-      return false;
+      console.error('Error uploading file:', error);
+      throw error;
     }
   }
 
   async deleteFile(fileId) {
     try {
-      return await this.storage.deleteFile(conf.appwriteBucketId, fileId);
+      if (!fileId) {
+        console.warn('No file ID provided for deletion');
+        return false;
+      }
+      
+      await this.storage.deleteFile(conf.appwriteBucketId, fileId);
+      return true;
     } catch (error) {
-      console.log("Appwrite serve :: deleteFile:: error", error);
+      console.error('Error deleting file:', error);
       return false;
     }
   }
 
-  getFilePreview(fileId) {
-    return this.storage.getFilePreview(conf.appwriteBucketId, fileId);
+  getFilePreview(fileId, width = 400, height = 400) {
+    try {
+      if (!fileId) {
+        console.warn('No file ID provided');
+        return '';
+      }
+      
+      // Construct the full preview URL manually
+      const previewUrl = `${conf.appwriteUrl}/storage/buckets/${conf.appwriteBucketId}/files/${fileId}/preview?width=${width}&height=${height}&quality=100`;
+      
+      console.log('Generated Preview URL:', previewUrl);
+      
+      return previewUrl;
+    } catch (error) {
+      console.error('Error generating file preview URL:', error);
+      return '';
+    }
   }
 }
 

@@ -135,7 +135,16 @@ export default function Post() {
                 src={appwriteService.getFilePreview(post.featuredImage)}
                 alt={post.title}
                 className="w-full h-[300px] md:h-[400px] rounded-xl object-cover"
-                onError={() => setImgError(true)}
+                onError={(e) => {
+                  console.error('Image load error details:', {
+                    src: e.target.src,
+                    errorEvent: e,
+                    naturalWidth: e.target.naturalWidth,
+                    naturalHeight: e.target.naturalHeight
+                  });
+                  setImgError(true);
+                }}
+                crossOrigin="anonymous"
               />
             ) : (
               <div className="w-full h-48 bg-gray-200 dark:bg-gray-700 rounded-xl flex items-center justify-center">
