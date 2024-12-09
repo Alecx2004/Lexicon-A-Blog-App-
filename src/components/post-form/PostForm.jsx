@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React, { useState, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Button, Input, Select, RTE } from "../index";
+import { Button, Input, Select } from "../index";
 import appwriteService from "../../appwrite/config";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -32,15 +32,21 @@ export default function PostForm({
     }
   }, [slug, featuredImage]);
 
-  const { register, handleSubmit, watch, setValue, control, getValues } =
-    useForm({
-      defaultValues: {
-        title: title || "",
-        slug: slug || "",
-        content: content || "",
-        status: status || "active",
-      },
-    });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      title: title || "",
+      slug: slug || "",
+      content: content || "",
+      status: status || "active",
+    },
+  });
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -124,7 +130,7 @@ export default function PostForm({
 
   return (
     <form onSubmit={handleSubmit(submit)} className="flex flex-wrap">
-      <div className="w-2/3 px-2">
+      <div className="w-full md:w-2/3 px-2">
         <Input
           label="Title :"
           placeholder="Title"
@@ -142,27 +148,47 @@ export default function PostForm({
             });
           }}
         />
-        <RTE
-          label="Content :"
-          name="content"
-          control={control}
-          defaultValue={getValues("content")}
-          className="dark:bg-gray-800 dark:text-white"
-        />
-      </div>
-      <div className="w-1/3 px-2">
         <div className="mb-4">
-          <Input
-            label="Featured Image :"
-            type="file"
-            className="mb-4 dark:bg-gray-800 dark:text-white"
-            accept="image/png, image/jpg, image/jpeg, image/gif"
-            {...register("image", { required: !featuredImage })}
-            onChange={(e) => {
-              handleImageChange(e);
-              register("image").onChange(e);
-            }}
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Content :
+          </label>
+          <textarea
+            {...register("content", {
+              required: "Content is required",
+              maxLength: {
+                value: 5000,
+                message: "Content cannot exceed 5000 characters",
+              },
+            })}
+            placeholder="Write your post content here..."
+            className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white dark:border-gray-700"
+            rows={10}
+            defaultValue={getValues("content")}
           />
+          {errors.content && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.content.message}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="w-full md:w-1/3 px-2">
+        <div className="mb-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex-grow w-full">
+              <Input
+                label="Featured Image :"
+                type="file"
+                className="mb-4 dark:bg-gray-800 dark:text-white w-full"
+                accept="image/png, image/jpg, image/jpeg, image/gif"
+                {...register("image", { required: !featuredImage })}
+                onChange={(e) => {
+                  handleImageChange(e);
+                  register("image").onChange(e);
+                }}
+              />
+            </div>
+          </div>
           {(previewImage || featuredImage) && (
             <div className="w-full mt-4 relative rounded-lg overflow-hidden shadow-lg dark:shadow-gray-700">
               <img
@@ -185,14 +211,19 @@ export default function PostForm({
           className="mb-4 dark:bg-gray-800 dark:text-white"
           {...register("status", { required: true })}
         />
-        <Button 
-          type="submit" 
-          disabled={loading} 
-          className="w-full dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
+        <Button
+          type="submit"
+          bgColor={loading ? "bg-gray-400" : "bg-blue-500"}
+          className="w-full"
+          disabled={loading}
         >
-          {loading ? "Processing..." : $id ? "Update" : "Submit"}
+          {loading ? "Submitting..." : $id ? "Update Post" : "Submit Post"}
         </Button>
-        {error && <p className="text-red-500 dark:text-red-400 mt-2">{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm mt-1">
+            {error}
+          </p>
+        )}
       </div>
     </form>
   );
