@@ -62,6 +62,10 @@ export default function PostForm({
 
   const submit = async (data) => {
     try {
+      if (!userData?.$id) {
+        throw new Error("Please log in to create a post");
+      }
+
       if (featuredImage) {
         let fileId = featuredImage;
         if (data.image[0]) {
